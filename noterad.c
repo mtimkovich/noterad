@@ -1,4 +1,17 @@
 #include <gtk/gtk.h>
+#include <stdlib.h>
+
+gchar *filename;
+GtkWidget *window;
+GtkWidget *textbox;
+
+void new_file(GtkWidget *widget, gpointer data)
+{
+    GtkTextBuffer *textbuffer;
+
+    textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
+    gtk_text_buffer_set_text(GTK_TEXT_BUFFER(textbuffer), "", 0);
+}
 
 void save_file(GtkWidget *widget, gpointer data)
 {
@@ -7,17 +20,49 @@ void save_file(GtkWidget *widget, gpointer data)
 
 void open_file(GtkWidget *widget, gpointer data)
 {
-    printf("open\n");
+    GtkWidget *dialog;
+    GtkTextBuffer *textbuffer;
+    GtkTextIter start;
+
+    FILE *fp;
+    gchar ch[] = {' ', '\0'};
+
+    dialog = gtk_file_chooser_dialog_new ("Open...",
+            NULL,
+            GTK_FILE_CHOOSER_ACTION_OPEN,
+            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
+            NULL);
+
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+        if ((fp = fopen(filename, "r")) == NULL) {
+            fprintf(stderr, "Unable to open '%s'\n", filename);
+            exit(EXIT_FAILURE);
+        }
+        textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
+        gtk_text_buffer_set_text(GTK_TEXT_BUFFER(textbuffer), "", 0);
+
+        gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(textbuffer), &start);
+
+        while ((ch[0] = fgetc(fp)) != EOF) {
+            gtk_text_buffer_insert(GTK_TEXT_BUFFER(textbuffer), &start, ch, 1);
+        }
+
+        if (fclose(fp) == EOF) {
+            fprintf(stderr, "Unable to close '%s'\n", filename);
+            exit(EXIT_FAILURE);
+        }
+        printf("Opened file: %s\n", filename);
+    }
+    gtk_widget_destroy(dialog);
 }
 
 int main(int argc, char *argv[])
 {
-    GtkWidget *window;
     GtkWidget *container;
     GtkWidget *menu_buttons;
-    GtkWidget *save_button;
-    GtkWidget *open_button;
-    GtkWidget *textbox;
+    GtkWidget *button;
     GtkWidget *sw;
 
     gtk_init(&argc, &argv);
@@ -35,17 +80,23 @@ int main(int argc, char *argv[])
     // Put menu_buttons in container
     gtk_box_pack_start(GTK_BOX(container), menu_buttons, FALSE, FALSE, 0);
 
+    // Create new button
+    button = gtk_button_new_with_label("New"); 
+    gtk_widget_set_size_request(button, 90, 30);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(new_file), NULL);
+    gtk_box_pack_start(GTK_BOX(menu_buttons), button, FALSE, FALSE, 3);
+
     // Create save button
-    save_button = gtk_button_new_with_label("Save"); 
-    gtk_widget_set_size_request(save_button, 90, 30);
-    g_signal_connect(G_OBJECT(save_button), "clicked", G_CALLBACK(save_file), NULL);
-    gtk_box_pack_start(GTK_BOX(menu_buttons), save_button, FALSE, FALSE, 3);
+    button = gtk_button_new_with_label("Save"); 
+    gtk_widget_set_size_request(button, 90, 30);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(save_file), NULL);
+    gtk_box_pack_start(GTK_BOX(menu_buttons), button, FALSE, FALSE, 3);
 
     // Create open button
-    open_button = gtk_button_new_with_label("Open"); 
-    gtk_widget_set_size_request(open_button, 90, 30);
-    g_signal_connect(G_OBJECT(open_button), "clicked", G_CALLBACK(open_file), NULL);
-    gtk_box_pack_start(GTK_BOX(menu_buttons), open_button, FALSE, FALSE, 3);
+    button = gtk_button_new_with_label("Open"); 
+    gtk_widget_set_size_request(button, 90, 30);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(open_file), NULL);
+    gtk_box_pack_start(GTK_BOX(menu_buttons), button, FALSE, FALSE, 3);
 
     // Create Scrolled window
     sw = gtk_scrolled_window_new(NULL, NULL);
