@@ -1,22 +1,22 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-gchar *filename;
+gchar *FILENAME;
 GtkWidget *window;
 GtkWidget *textbox;
 
 void new_file(GtkWidget *widget, gpointer data)
 {
-    GtkTextBuffer *textbuffer;
+    GtkTextBuffer *buffer;
 
-    textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
-    gtk_text_buffer_set_text(GTK_TEXT_BUFFER(textbuffer), "", 0);
+    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
+    gtk_text_buffer_set_text(GTK_TEXT_BUFFER(buffer), "", 0);
 }
 
-void save_file(GtkWidget *widget, gpointer data)
+void save_as_file(GtkWidget *widget, gpointer data)
 {
     GtkWidget *dialog;
-    GtkTextBuffer *textbuffer;
+    GtkTextBuffer *buffer;
     GtkTextIter start;
     GtkTextIter end;
 
@@ -30,31 +30,64 @@ void save_file(GtkWidget *widget, gpointer data)
             NULL);
 
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
-        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-        if ((fp = fopen(filename, "w")) == NULL) {
-            fprintf(stderr, "Unable to open '%s'\n", filename);
+        FILENAME = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+        if ((fp = fopen(FILENAME, "w")) == NULL) {
+            fprintf(stderr, "Unable to open '%s'\n", FILENAME);
             return;
         }
-        textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
 
-        gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(textbuffer), &start);
-        gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(textbuffer), &end);
+        buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
 
-        fprintf(fp, "%s", gtk_text_buffer_get_text(GTK_TEXT_BUFFER(textbuffer), &start, &end, TRUE));
+        gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(buffer), &start);
+        gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(buffer), &end);
+
+        fprintf(fp, "%s", gtk_text_buffer_get_text(GTK_TEXT_BUFFER(buffer), &start, &end, TRUE));
 
         if (fclose(fp) == EOF) {
-            fprintf(stderr, "Unable to close '%s'\n", filename);
+            fprintf(stderr, "Unable to close '%s'\n", FILENAME);
             return;
         }
-        printf("Saved file: %s\n", filename);
+        printf("Saved file: %s\n", FILENAME);
     }
     gtk_widget_destroy(dialog);
+}
+
+void save_file(GtkWidget *widget, gpointer data)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter start;
+    GtkTextIter end;
+
+    FILE *fp;
+
+    if (FILENAME == "") {
+        save_as_file(NULL, NULL);
+        return;
+    }
+
+    if ((fp = fopen(FILENAME, "w")) == NULL) {
+        fprintf(stderr, "Unable to open '%s'\n", FILENAME);
+        return;
+    }
+
+    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
+
+    gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(buffer), &start);
+    gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(buffer), &end);
+
+    fprintf(fp, "%s", gtk_text_buffer_get_text(GTK_TEXT_BUFFER(buffer), &start, &end, TRUE));
+
+    if (fclose(fp) == EOF) {
+        fprintf(stderr, "Unable to close '%s'\n", FILENAME);
+        return;
+    }
+    printf("Saved file: %s\n", FILENAME);
 }
 
 void open_file(GtkWidget *widget, gpointer data)
 {
     GtkWidget *dialog;
-    GtkTextBuffer *textbuffer;
+    GtkTextBuffer *buffer;
     GtkTextIter start;
 
     FILE *fp;
@@ -69,25 +102,25 @@ void open_file(GtkWidget *widget, gpointer data)
             NULL);
 
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
-        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-        if ((fp = fopen(filename, "r")) == NULL) {
-            fprintf(stderr, "Unable to open '%s'\n", filename);
+        FILENAME = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+        if ((fp = fopen(FILENAME, "r")) == NULL) {
+            fprintf(stderr, "Unable to open '%s'\n", FILENAME);
             return;
         }
-        textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
-        gtk_text_buffer_set_text(GTK_TEXT_BUFFER(textbuffer), "", 0);
+        buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
+        gtk_text_buffer_set_text(GTK_TEXT_BUFFER(buffer), "", 0);
 
-        gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(textbuffer), &start);
+        gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(buffer), &start);
 
         while ((ch[0] = fgetc(fp)) != EOF) {
-            gtk_text_buffer_insert(GTK_TEXT_BUFFER(textbuffer), &start, ch, 1);
+            gtk_text_buffer_insert(GTK_TEXT_BUFFER(buffer), &start, ch, 1);
         }
 
         if (fclose(fp) == EOF) {
-            fprintf(stderr, "Unable to close '%s'\n", filename);
+            fprintf(stderr, "Unable to close '%s'\n", FILENAME);
             return;
         }
-        printf("Opened file: %s\n", filename);
+        printf("Opened file: %s\n", FILENAME);
     }
     gtk_widget_destroy(dialog);
 }
