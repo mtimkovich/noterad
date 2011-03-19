@@ -1,25 +1,40 @@
 #include <gtk/gtk.h>
-#include <stdlib.h>
 #include <string.h>
 
-gchar *FILENAME;
-gchar *short_name;
+#define TITLE_BUFFER 40
+
 GtkWidget *window;
 GtkWidget *textbox;
 GtkTextBuffer *buffer;
+
+char *FILENAME;
+char *short_name;
+char title[TITLE_BUFFER];
 
 char *get_short_name(char *string)
 {
     char *p;
     char *name;
 
-    name = a;
+    name = string;
 
     if ((p = strrchr(name, '/')) != NULL) {
         name = p+1;
     }
     return name;
 }
+
+void set_title(void)
+{
+    if (FILENAME != NULL) {
+        short_name = get_short_name(FILENAME);
+    } else {
+        short_name = "Untitled";
+    }
+    snprintf(title, TITLE_BUFFER, "%s - Noterad", short_name);
+    gtk_window_set_title(GTK_WINDOW(window), title);
+}
+
 
 void save_as_file(GtkWidget *widget, gpointer data)
 {
@@ -58,8 +73,7 @@ void save_as_file(GtkWidget *widget, gpointer data)
             return;
         }
         printf("Saved file: %s\n", FILENAME);
-        short_name = get_short_name(FILENAME);
-//         gtk_window_set_title(GTK_WINDOW(window), 
+        set_title();
 
         gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(buffer), FALSE);
     }
@@ -102,14 +116,18 @@ int confirm_dialog(void)
 {
     GtkWidget *dialog;
     GtkWidget *label;
-    gint response;
+
+    const int LABEL_SIZE = 60;
+    char label_text[LABEL_SIZE];
+    int response;
 
     dialog = gtk_dialog_new();
 
     gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 150);
     gtk_dialog_add_buttons(GTK_DIALOG(dialog), "Cancel", 0, "No", 1, "Yes", 2, NULL);
 
-    label = gtk_label_new("Save changes to file?");
+    snprintf(label_text, LABEL_SIZE, "Save changes to '%s'?", short_name);
+    label = gtk_label_new(label_text);
 
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), label, TRUE, TRUE, 0);
 
@@ -135,6 +153,9 @@ void new_file(GtkWidget *widget, gpointer data)
         }
     }
 
+    FILENAME = NULL;
+    set_title();
+
     gtk_text_buffer_set_text(GTK_TEXT_BUFFER(buffer), "", 0);
 }
 
@@ -146,7 +167,7 @@ void open_file(GtkWidget *widget, gpointer data)
 
     FILE *fp;
     // Convert the char to a string so it can get added to the text buffer
-    gchar ch[] = {' ', '\0'};
+    char ch[] = {' ', '\0'};
 
     dialog = gtk_file_chooser_dialog_new("Open...",
             NULL,
@@ -184,6 +205,7 @@ void open_file(GtkWidget *widget, gpointer data)
         }
         printf("Opened file: %s\n", FILENAME);
         gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(buffer), FALSE);
+        set_title();
     }
     gtk_widget_destroy(dialog);
 }
@@ -216,9 +238,10 @@ int main(int argc, char *argv[])
     // Set up window
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size(GTK_WINDOW(window), 750, 450);
-    gtk_window_set_title(GTK_WINDOW(window), "Untitled - Noterad");
     gtk_container_set_border_width(GTK_CONTAINER(window), 10);
     g_signal_connect_swapped(G_OBJECT(window), "delete_event", G_CALLBACK(delete_event), NULL);
+
+    set_title();
 
     // Create Boxes
     container = gtk_vbox_new(FALSE, 3);
@@ -267,6 +290,6 @@ int main(int argc, char *argv[])
     gtk_widget_show_all(window);
 
     gtk_main();
-    return EXIT_SUCCESS;
+    return 0;
 }
 
