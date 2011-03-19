@@ -254,6 +254,10 @@ void menubar(void)
     gtk_widget_add_accelerator(menu_item, "activate", accel_group, 
             GDK_s, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
 
+    // Separator
+    sep = gtk_separator_menu_item_new();
+    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), sep);
+
     // Quit
     menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), menu_item);
@@ -292,24 +296,6 @@ int main(int argc, char *argv[])
 
     menubar();
 
-//     // Create new button
-//     button = gtk_button_new_with_label("New"); 
-//     gtk_widget_set_size_request(button, 90, 30);
-//     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(new_file), NULL);
-//     gtk_box_pack_start(GTK_BOX(menu_buttons), button, FALSE, FALSE, 3);
-// 
-//     // Create save button
-//     button = gtk_button_new_with_label("Save"); 
-//     gtk_widget_set_size_request(button, 90, 30);
-//     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(save_file), NULL);
-//     gtk_box_pack_start(GTK_BOX(menu_buttons), button, FALSE, FALSE, 3);
-// 
-//     // Create open button
-//     button = gtk_button_new_with_label("Open"); 
-//     gtk_widget_set_size_request(button, 90, 30);
-//     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(open_file), NULL);
-//     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 3);
-
     // Create Scrolled window
     sw = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
@@ -319,6 +305,11 @@ int main(int argc, char *argv[])
     gtk_text_view_set_editable(GTK_TEXT_VIEW(textbox), TRUE);
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textbox), GTK_WRAP_WORD_CHAR);
     gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(textbox), TRUE);
+
+    gtk_text_view_set_border_window_size(GTK_TEXT_VIEW(textbox), GTK_TEXT_WINDOW_LEFT, 1);
+    gtk_text_view_set_border_window_size(GTK_TEXT_VIEW(textbox), GTK_TEXT_WINDOW_RIGHT, 1);
+    gtk_text_view_set_border_window_size(GTK_TEXT_VIEW(textbox), GTK_TEXT_WINDOW_TOP, 0);
+    gtk_text_view_set_border_window_size(GTK_TEXT_VIEW(textbox), GTK_TEXT_WINDOW_BOTTOM, 1);
 
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
     gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(buffer), FALSE);
