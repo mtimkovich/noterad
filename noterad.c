@@ -140,6 +140,7 @@ void new_file(GtkWidget *widget, gpointer data)
     set_title();
 
     gtk_text_buffer_set_text(GTK_TEXT_BUFFER(buffer), "", 0);
+    gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(buffer), FALSE);
 }
 
 
