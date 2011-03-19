@@ -1,10 +1,25 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include <string.h>
 
-gchar *FILENAME = NULL;
+gchar *FILENAME;
+gchar *short_name;
 GtkWidget *window;
 GtkWidget *textbox;
 GtkTextBuffer *buffer;
+
+char *get_short_name(char *string)
+{
+    char *p;
+    char *name;
+
+    name = a;
+
+    if ((p = strrchr(name, '/')) != NULL) {
+        name = p+1;
+    }
+    return name;
+}
 
 void save_as_file(GtkWidget *widget, gpointer data)
 {
@@ -25,6 +40,7 @@ void save_as_file(GtkWidget *widget, gpointer data)
 
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
         FILENAME = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+
         if ((fp = fopen(FILENAME, "w")) == NULL) {
             fprintf(stderr, "Unable to open '%s'\n", FILENAME);
             return;
@@ -42,6 +58,9 @@ void save_as_file(GtkWidget *widget, gpointer data)
             return;
         }
         printf("Saved file: %s\n", FILENAME);
+        short_name = get_short_name(FILENAME);
+//         gtk_window_set_title(GTK_WINDOW(window), 
+
         gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(buffer), FALSE);
     }
     gtk_widget_destroy(dialog);
@@ -109,6 +128,7 @@ void new_file(GtkWidget *widget, gpointer data)
 {
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
 
+    // Are you sure you want to quit?
     if (gtk_text_buffer_get_modified(GTK_TEXT_BUFFER(buffer))) {
         if (confirm_dialog() == 0) {
             return;
@@ -138,6 +158,7 @@ void open_file(GtkWidget *widget, gpointer data)
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
         buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
 
+        // Are you sure you want to quit?
         if (gtk_text_buffer_get_modified(GTK_TEXT_BUFFER(buffer))) {
             if (confirm_dialog() == 0) {
                 return;
@@ -172,6 +193,7 @@ gboolean delete_event(GtkWidget *widget, gpointer data)
 {
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
          
+    // Are you sure you want to quit?
     if (gtk_text_buffer_get_modified(GTK_TEXT_BUFFER(buffer))) {
         if (confirm_dialog() == 0) {
             return TRUE;
@@ -194,9 +216,9 @@ int main(int argc, char *argv[])
     // Set up window
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size(GTK_WINDOW(window), 750, 450);
+    gtk_window_set_title(GTK_WINDOW(window), "Untitled - Noterad");
     gtk_container_set_border_width(GTK_CONTAINER(window), 10);
     g_signal_connect_swapped(G_OBJECT(window), "delete_event", G_CALLBACK(delete_event), NULL);
-//     g_signal_connect_swapped(G_OBJECT(window), "delete_event", G_CALLBACK(gtk_main_quit), NULL);
 
     // Create Boxes
     container = gtk_vbox_new(FALSE, 3);
@@ -247,6 +269,4 @@ int main(int argc, char *argv[])
     gtk_main();
     return EXIT_SUCCESS;
 }
-
-
 
