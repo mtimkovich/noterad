@@ -36,13 +36,9 @@ void set_title(void)
 }
 
 
-void save_as_file(GtkWidget *widget, gpointer data)
+int save_as_file(GtkWidget *widget, gpointer data)
 {
     GtkWidget *dialog;
-    GtkTextIter start;
-    GtkTextIter end;
-
-    FILE *fp;
 
     dialog = gtk_file_chooser_dialog_new("Save file",
             NULL,
@@ -55,29 +51,13 @@ void save_as_file(GtkWidget *widget, gpointer data)
 
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
         FILENAME = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-
-        if ((fp = fopen(FILENAME, "w")) == NULL) {
-            fprintf(stderr, "Unable to open '%s'\n", FILENAME);
-            return;
-        }
-
-        buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
-
-        gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(buffer), &start);
-        gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(buffer), &end);
-
-        fprintf(fp, "%s", gtk_text_buffer_get_text(GTK_TEXT_BUFFER(buffer), &start, &end, TRUE));
-
-        if (fclose(fp) == EOF) {
-            fprintf(stderr, "Unable to close '%s'\n", FILENAME);
-            return;
-        }
-        printf("Saved file: %s\n", FILENAME);
         set_title();
-
-        gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(buffer), FALSE);
+        gtk_widget_destroy(dialog);
+        return 1;
+    } else {
+        gtk_widget_destroy(dialog);
+        return 0;
     }
-    gtk_widget_destroy(dialog);
 }
 
 void save_file(GtkWidget *widget, gpointer data)
@@ -88,8 +68,9 @@ void save_file(GtkWidget *widget, gpointer data)
     FILE *fp;
 
     if (FILENAME == NULL) {
-        save_as_file(NULL, NULL);
-        return;
+        if (save_as_file(NULL, NULL) == 0) {
+            return;
+        }
     }
 
     if ((fp = fopen(FILENAME, "w")) == NULL) {
