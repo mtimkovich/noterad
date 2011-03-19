@@ -99,13 +99,10 @@ int confirm_dialog(void)
     response = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
 
-    if (response == 0) {
-        return 0;
-    } else if (response == 1) {
-        return 1;
-    } else if (response == 2) {
+    if (response == 2) {
         save_file(NULL, NULL);
     }
+    return response;
 }
 
 void new_file(GtkWidget *widget, gpointer data)
