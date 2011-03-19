@@ -1,15 +1,14 @@
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #include <string.h>
 
-#define TITLE_BUFFER 40
-
 GtkWidget *window;
+GtkWidget *hbox;
 GtkWidget *textbox;
 GtkTextBuffer *buffer;
 
 char *FILENAME;
 char *short_name;
-char title[TITLE_BUFFER];
 
 char *get_short_name(char *string)
 {
@@ -26,6 +25,9 @@ char *get_short_name(char *string)
 
 void set_title(void)
 {
+    const int TITLE_BUFFER = 40;
+    char title[TITLE_BUFFER];
+
     if (FILENAME != NULL) {
         short_name = get_short_name(FILENAME);
     } else {
@@ -207,10 +209,47 @@ gboolean delete_event(GtkWidget *widget, gpointer data)
     return FALSE;
 }
 
+void menubar(void)
+{
+    GtkWidget *menubar;
+    GtkWidget *file;
+    GtkWidget *filemenu;
+    GtkWidget *menu_item;
+    GtkWidget *sep;
+    GtkAccelGroup *accel_group;
+
+    menubar = gtk_menu_bar_new();
+
+    filemenu = gtk_menu_new();
+    file = gtk_menu_item_new_with_mnemonic("_File");
+
+    accel_group = gtk_accel_group_new();
+    gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
+
+    menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), menu_item);
+    g_signal_connect(menu_item, "activate", G_CALLBACK(open_file), NULL);
+
+    menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_SAVE, NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), menu_item);
+    g_signal_connect(menu_item, "activate", G_CALLBACK(save_file), NULL);
+
+    menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), menu_item);
+    g_signal_connect(menu_item, "activate", G_CALLBACK(delete_event), NULL);
+
+    gtk_widget_add_accelerator(menu_item, "activate", accel_group, 
+            GDK_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(file), filemenu);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), file);
+
+    gtk_box_pack_start(GTK_BOX(hbox), menubar, FALSE, FALSE, 0);
+}
+
 int main(int argc, char *argv[])
 {
     GtkWidget *container;
-    GtkWidget *menu_buttons;
     GtkWidget *button;
     GtkWidget *sw;
 
@@ -219,35 +258,37 @@ int main(int argc, char *argv[])
     // Set up window
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size(GTK_WINDOW(window), 750, 450);
-    gtk_container_set_border_width(GTK_CONTAINER(window), 10);
+//     gtk_container_set_border_width(GTK_CONTAINER(window), 10);
     g_signal_connect_swapped(G_OBJECT(window), "delete_event", G_CALLBACK(delete_event), NULL);
 
     set_title();
 
     // Create Boxes
     container = gtk_vbox_new(FALSE, 3);
-    menu_buttons = gtk_hbox_new(FALSE, 0);
+    hbox = gtk_hbox_new(FALSE, 0);
 
     // Put menu_buttons in container
-    gtk_box_pack_start(GTK_BOX(container), menu_buttons, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(container), hbox, FALSE, FALSE, 0);
 
-    // Create new button
-    button = gtk_button_new_with_label("New"); 
-    gtk_widget_set_size_request(button, 90, 30);
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(new_file), NULL);
-    gtk_box_pack_start(GTK_BOX(menu_buttons), button, FALSE, FALSE, 3);
+    menubar();
 
-    // Create save button
-    button = gtk_button_new_with_label("Save"); 
-    gtk_widget_set_size_request(button, 90, 30);
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(save_file), NULL);
-    gtk_box_pack_start(GTK_BOX(menu_buttons), button, FALSE, FALSE, 3);
-
-    // Create open button
-    button = gtk_button_new_with_label("Open"); 
-    gtk_widget_set_size_request(button, 90, 30);
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(open_file), NULL);
-    gtk_box_pack_start(GTK_BOX(menu_buttons), button, FALSE, FALSE, 3);
+//     // Create new button
+//     button = gtk_button_new_with_label("New"); 
+//     gtk_widget_set_size_request(button, 90, 30);
+//     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(new_file), NULL);
+//     gtk_box_pack_start(GTK_BOX(menu_buttons), button, FALSE, FALSE, 3);
+// 
+//     // Create save button
+//     button = gtk_button_new_with_label("Save"); 
+//     gtk_widget_set_size_request(button, 90, 30);
+//     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(save_file), NULL);
+//     gtk_box_pack_start(GTK_BOX(menu_buttons), button, FALSE, FALSE, 3);
+// 
+//     // Create open button
+//     button = gtk_button_new_with_label("Open"); 
+//     gtk_widget_set_size_request(button, 90, 30);
+//     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(open_file), NULL);
+//     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 3);
 
     // Create Scrolled window
     sw = gtk_scrolled_window_new(NULL, NULL);
