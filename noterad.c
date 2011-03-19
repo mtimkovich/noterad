@@ -305,6 +305,8 @@ int main(int argc, char *argv[])
     gtk_text_view_set_editable(GTK_TEXT_VIEW(textbox), TRUE);
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textbox), GTK_WRAP_WORD_CHAR);
     gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(textbox), TRUE);
+    gtk_text_view_set_left_margin(GTK_TEXT_VIEW(textbox), 1);
+    gtk_text_view_set_right_margin(GTK_TEXT_VIEW(textbox), 1);
 
     gtk_text_view_set_border_window_size(GTK_TEXT_VIEW(textbox), GTK_TEXT_WINDOW_LEFT, 1);
     gtk_text_view_set_border_window_size(GTK_TEXT_VIEW(textbox), GTK_TEXT_WINDOW_RIGHT, 1);
