@@ -226,18 +226,38 @@ void menubar(void)
     accel_group = gtk_accel_group_new();
     gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
 
+    // New
+    menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), menu_item);
+    g_signal_connect(menu_item, "activate", G_CALLBACK(new_file), NULL);
+    gtk_widget_add_accelerator(menu_item, "activate", accel_group, 
+            GDK_n, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+    // Open
     menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), menu_item);
     g_signal_connect(menu_item, "activate", G_CALLBACK(open_file), NULL);
+    gtk_widget_add_accelerator(menu_item, "activate", accel_group, 
+            GDK_o, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
+    // Save
     menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_SAVE, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), menu_item);
     g_signal_connect(menu_item, "activate", G_CALLBACK(save_file), NULL);
+    gtk_widget_add_accelerator(menu_item, "activate", accel_group, 
+            GDK_s, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
+    // Save As
+    menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_SAVE_AS, NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), menu_item);
+    g_signal_connect(menu_item, "activate", G_CALLBACK(save_as_file), NULL);
+    gtk_widget_add_accelerator(menu_item, "activate", accel_group, 
+            GDK_s, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
+
+    // Quit
     menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), menu_item);
     g_signal_connect(menu_item, "activate", G_CALLBACK(delete_event), NULL);
-
     gtk_widget_add_accelerator(menu_item, "activate", accel_group, 
             GDK_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
@@ -264,7 +284,7 @@ int main(int argc, char *argv[])
     set_title();
 
     // Create Boxes
-    container = gtk_vbox_new(FALSE, 3);
+    container = gtk_vbox_new(FALSE, 0);
     hbox = gtk_hbox_new(FALSE, 0);
 
     // Put menu_buttons in container
