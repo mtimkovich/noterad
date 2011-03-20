@@ -10,6 +10,19 @@ GtkTextBuffer *buffer;
 char *FILENAME;
 char *short_name;
 
+void about_dialog(GtkWidget *widget, gpointer data)
+{
+    GtkWidget *dialog;
+
+    dialog = gtk_about_dialog_new();
+    gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), "Noterad");
+    gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), "0.1");
+    gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "(c) Max Timkovich");
+    gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), "A simple GTK text editor");
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+}
+
 char *get_short_name(char *string)
 {
     char *p;
@@ -212,64 +225,78 @@ gboolean delete_event(GtkWidget *widget, gpointer data)
 
 void menubar(void)
 {
-    GtkWidget *menubar;
+    GtkWidget *menu_bar;
     GtkWidget *file;
-    GtkWidget *filemenu;
+    GtkWidget *file_menu;
+    GtkWidget *help;
+    GtkWidget *help_menu;
     GtkWidget *menu_item;
     GtkWidget *sep;
     GtkAccelGroup *accel_group;
 
-    menubar = gtk_menu_bar_new();
+    menu_bar = gtk_menu_bar_new();
 
-    filemenu = gtk_menu_new();
+    file_menu = gtk_menu_new();
     file = gtk_menu_item_new_with_mnemonic("_File");
+
+    help_menu = gtk_menu_new();
+    help = gtk_menu_item_new_with_mnemonic("_Help");
 
     accel_group = gtk_accel_group_new();
     gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
 
     // New
     menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
-    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), menu_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), menu_item);
     g_signal_connect(menu_item, "activate", G_CALLBACK(new_file), NULL);
     gtk_widget_add_accelerator(menu_item, "activate", accel_group, 
             GDK_n, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
     // Open
     menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
-    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), menu_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), menu_item);
     g_signal_connect(menu_item, "activate", G_CALLBACK(open_file), NULL);
     gtk_widget_add_accelerator(menu_item, "activate", accel_group, 
             GDK_o, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
     // Save
     menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_SAVE, NULL);
-    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), menu_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), menu_item);
     g_signal_connect(menu_item, "activate", G_CALLBACK(save_file), NULL);
     gtk_widget_add_accelerator(menu_item, "activate", accel_group, 
             GDK_s, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
     // Save As
     menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_SAVE_AS, NULL);
-    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), menu_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), menu_item);
     g_signal_connect(menu_item, "activate", G_CALLBACK(save_as_file), NULL);
     gtk_widget_add_accelerator(menu_item, "activate", accel_group, 
             GDK_s, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
 
     // Separator
     sep = gtk_separator_menu_item_new();
-    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), sep);
+    gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), sep);
 
     // Quit
     menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, NULL);
-    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), menu_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), menu_item);
     g_signal_connect(menu_item, "activate", G_CALLBACK(delete_event), NULL);
     gtk_widget_add_accelerator(menu_item, "activate", accel_group, 
             GDK_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(file), filemenu);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), file);
+    // About
+    menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_ABOUT, NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(help_menu), menu_item);
+    g_signal_connect(menu_item, "activate", G_CALLBACK(about_dialog), NULL);
 
-    gtk_box_pack_start(GTK_BOX(hbox), menubar, FALSE, FALSE, 0);
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(file), file_menu);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), file);
+
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(help), help_menu);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), help);
+
+
+    gtk_box_pack_start(GTK_BOX(hbox), menu_bar, FALSE, FALSE, 0);
 }
 
 int main(int argc, char *argv[])
@@ -283,7 +310,6 @@ int main(int argc, char *argv[])
     // Set up window
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size(GTK_WINDOW(window), 750, 450);
-//     gtk_container_set_border_width(GTK_CONTAINER(window), 10);
     g_signal_connect_swapped(G_OBJECT(window), "delete_event", G_CALLBACK(delete_event), NULL);
 
     set_title();
