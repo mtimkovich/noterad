@@ -117,23 +117,28 @@ int confirm_dialog(void)
     char label_text[LABEL_SIZE];
     int response;
 
-    dialog = gtk_dialog_new();
-
-    gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 150);
-    gtk_window_set_title(GTK_WINDOW(dialog), "");
-    gtk_dialog_add_buttons(GTK_DIALOG(dialog), "Cancel", 0, "No", 1, "Yes", 2, NULL);
-
     snprintf(label_text, LABEL_SIZE, "Save changes to '%s'?", short_name);
-    label = gtk_label_new(label_text);
 
-    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), label, TRUE, TRUE, 0);
+    dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+            GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_QUESTION,
+            GTK_BUTTONS_NONE,
+            label_text);
 
-    gtk_widget_show_all(dialog);
+    gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
+    gtk_window_set_title(GTK_WINDOW(dialog), "");
+    gtk_dialog_add_buttons(GTK_DIALOG(dialog),
+            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+            GTK_STOCK_NO, GTK_RESPONSE_NO, 
+            GTK_STOCK_YES, GTK_RESPONSE_YES, 
+            NULL);
+
+//     gtk_widget_show_all(dialog);
 
     response = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
 
-    if (response == 2) {
+    if (response == GTK_RESPONSE_YES) {
         save_file(NULL, NULL);
     }
     return response;
@@ -145,7 +150,7 @@ void new_file(GtkWidget *widget, gpointer data)
 
     // Are you sure you want to quit?
     if (gtk_text_buffer_get_modified(GTK_TEXT_BUFFER(buffer))) {
-        if (confirm_dialog() == 0) {
+        if (confirm_dialog() == GTK_RESPONSE_CANCEL) {
             return;
         }
     }
@@ -167,7 +172,7 @@ void open_file(GtkWidget *widget, gpointer data)
 
     // Are you sure you want to quit?
     if (gtk_text_buffer_get_modified(GTK_TEXT_BUFFER(buffer))) {
-        if (confirm_dialog() == 0) {
+        if (confirm_dialog() == GTK_RESPONSE_CANCEL) {
             return;
         }
     }
@@ -215,7 +220,7 @@ gboolean delete_event(GtkWidget *widget, gpointer data)
          
     // Are you sure you want to quit?
     if (gtk_text_buffer_get_modified(GTK_TEXT_BUFFER(buffer))) {
-        if (confirm_dialog() == 0) {
+        if (confirm_dialog() == GTK_RESPONSE_CANCEL) {
             return TRUE;
         }
     }
