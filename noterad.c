@@ -26,14 +26,11 @@ void about_dialog(GtkWidget *widget, gpointer data)
 char *get_short_name(char *string)
 {
     char *p;
-    char *name;
 
-    name = string;
-
-    if ((p = strrchr(name, '/')) != NULL) {
-        name = p+1;
+    if ((p = strrchr(string, '/')) != NULL) {
+        string = p+1;
     }
-    return name;
+    return string;
 }
 
 void set_title(void)
@@ -133,8 +130,6 @@ int confirm_dialog(void)
             GTK_STOCK_YES, GTK_RESPONSE_YES, 
             NULL);
 
-//     gtk_widget_show_all(dialog);
-
     response = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
 
@@ -168,6 +163,10 @@ void open_file(GtkWidget *widget, gpointer data)
     GtkWidget *dialog;
     GtkTextIter start;
 
+    FILE *fp;
+    // Convert the char to a string so it can get added to the text buffer
+    char ch[] = {' ', '\0'};
+
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
 
     // Are you sure you want to quit?
@@ -176,10 +175,6 @@ void open_file(GtkWidget *widget, gpointer data)
             return;
         }
     }
-
-    FILE *fp;
-    // Convert the char to a string so it can get added to the text buffer
-    char ch[] = {' ', '\0'};
 
     dialog = gtk_file_chooser_dialog_new("Open...",
             NULL,
