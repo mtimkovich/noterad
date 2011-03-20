@@ -120,6 +120,7 @@ int confirm_dialog(void)
     dialog = gtk_dialog_new();
 
     gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 150);
+    gtk_window_set_title(GTK_WINDOW(dialog), "");
     gtk_dialog_add_buttons(GTK_DIALOG(dialog), "Cancel", 0, "No", 1, "Yes", 2, NULL);
 
     snprintf(label_text, LABEL_SIZE, "Save changes to '%s'?", short_name);
@@ -162,6 +163,15 @@ void open_file(GtkWidget *widget, gpointer data)
     GtkWidget *dialog;
     GtkTextIter start;
 
+    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
+
+    // Are you sure you want to quit?
+    if (gtk_text_buffer_get_modified(GTK_TEXT_BUFFER(buffer))) {
+        if (confirm_dialog() == 0) {
+            return;
+        }
+    }
+
     FILE *fp;
     // Convert the char to a string so it can get added to the text buffer
     char ch[] = {' ', '\0'};
@@ -174,15 +184,6 @@ void open_file(GtkWidget *widget, gpointer data)
             NULL);
 
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
-        buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textbox));
-
-        // Are you sure you want to quit?
-        if (gtk_text_buffer_get_modified(GTK_TEXT_BUFFER(buffer))) {
-            if (confirm_dialog() == 0) {
-                return;
-            }
-        }
-
         FILENAME = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
         if ((fp = fopen(FILENAME, "r")) == NULL) {
             fprintf(stderr, "Unable to open '%s'\n", FILENAME);
@@ -294,7 +295,6 @@ void menubar(void)
 
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(help), help_menu);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), help);
-
 
     gtk_box_pack_start(GTK_BOX(hbox), menu_bar, FALSE, FALSE, 0);
 }
